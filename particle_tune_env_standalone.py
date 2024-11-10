@@ -419,21 +419,9 @@ class Anymal_runner(object):
 
 
 def main():
-    """
-    Parse arguments and instantiate the Anymal runner
-    """
-    parser = argparse.ArgumentParser(description='Anymal simulation runner.')
-    parser.add_argument('--config', type=str, help='Path to configuration file (JSON).')
-    args = parser.parse_args()
 
+    # Load the configuration
     config = Config()
-
-    if args.config:
-        with open(args.config, 'r') as f:
-            config_data = json.load(f)
-            config.update_from_dict(config_data)
-    else:
-        print("No configuration file provided. Using default parameters.")
 
     # Load the YAML configuration file
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -444,7 +432,6 @@ def main():
     simulation_app.update()
     runner.setup()
     simulation_app.update()
-    runner._world.reset()
     runner._world.reset()
     runner._world.reset()
     simulation_app.update()
