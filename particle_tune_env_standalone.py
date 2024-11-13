@@ -27,59 +27,13 @@ from sim_config import SimConfig
 
 
 class Config:
-    def __init__(self):
-        # Simulation parameters
-        self.physics_dt = 1 / 200.0
-        self.render_dt = 1 / 60.0
-
-        # Particle grid parameters
-        self.particle_x_position = 2.5
-        self.particle_y_position = 0.0
-        self.particle_z_position = 0.1
-        self.particle_scale_x = 3.0
-        self.particle_scale_y = 3.0
-        self.particle_scale_z = 0.5
-
-        # Terrain parameters
-        self.terrain_width = 256
-        self.terrain_length = 256
-        self.terrain_vertical_scale = 0.1
-        self.terrain_horizontal_scale = 0.1
-        self.terrain_platform_height = 0.0
-        self.terrain_depression_depth = self.particle_scale_z
-
-        # Particle material parameters
-        self.pbd_material_friction = 0.8
-        self.pbd_material_particle_friction_scale = 0.2
-        self.pbd_material_adhesion = 0.00001
-        self.pbd_material_particle_adhesion_scale = 50000.0
-        self.pbd_material_adhesion_offset_scale = 1.2
-        self.pbd_material_density = 1500
-
-        # Particle system parameters
-        self.particle_system_rest_offset = 0.02
-        self.particle_system_solid_rest_offset = 0.015
-        self.particle_system_contact_offset = 0.04
-        self.particle_system_max_velocity = 100.0
-        self.particle_system_max_neighborhood = 340
-        self.particle_system_solver_position_iteration_count = 64
-        self.particle_system_enable_ccd = True
-        self.particle_system_max_depenetration_velocity = 100.0
-
-        # Particle grid parameters
-        self.particle_grid_jitter_factor = 0.2  # As a fraction of particle_spacing
-        self.particle_grid_self_collision = True
-        self.particle_grid_fluid = False
-        self.particle_grid_particle_group = 0
-        self.particle_grid_particle_mass = 0.0
-        self.particle_grid_density = 0.0
+    def __init__(self, config_data=None):
+        if config_data:
+            self.update_from_dict(config_data)
 
     def update_from_dict(self, config_data):
         for key, value in config_data.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-            else:
-                print(f"Warning: Unknown configuration parameter '{key}'")
+            setattr(self, key, value)
 
 
 class Anymal_runner(object):
@@ -91,8 +45,8 @@ class Anymal_runner(object):
         config {Config} -- Configuration object containing parameters.
         """
         self.config = config
-        physics_dt = config.physics_dt
-        render_dt = config.render_dt
+        physics_dt = 1/200.0
+        render_dt = 1/120.0
         self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
         self.stage = get_current_stage()
 
@@ -113,7 +67,7 @@ class Anymal_runner(object):
             prim_path="/World/Anymal",
             name="Anymal",
             usd_path=assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c.usd",
-            position=np.array([0, 0, 0.7]),
+            position=np.array([-2.5, 0, 0.7]),
         )
         self._sim_config.apply_articulation_settings(
             "anymal", get_prim_at_path(self._anymal._prim_path), self._sim_config.parse_actor_config("anymal")
@@ -154,36 +108,36 @@ class Anymal_runner(object):
         that matches the particle grid's position and size.
         """
         # Terrain parameters from config
-        width = self.config.terrain_width          # Number of grid points along the width
+        width = self.config.terrain_width        # Number of grid points along the width
         length = self.config.terrain_length         # Number of grid points along the length
         vertical_scale = self.config.terrain_vertical_scale  # Meters per heightfield unit
         horizontal_scale = self.config.terrain_horizontal_scale  # Meters per pixel
         platform_height = self.config.terrain_platform_height    # Height of the surrounding platform in meters
-        depression_depth = -0.5 * self.config.terrain_depression_depth  # Depth of the depression in meters (negative value)
+        depression_depth = -1 * self.config.terrain_depression_depth  # Depth of the depression in meters (negative value)
 
         # Particle grid parameters
         x_position = self.config.particle_x_position
         y_position = self.config.particle_y_position
-        scale_x = self.config.particle_scale_x * 1.05
-        scale_y = self.config.particle_scale_y * 1.05
+        scale_x = self.config.particle_scale_x 
+        scale_y = self.config.particle_scale_y 
 
         # Set terrain origin to match particle grid center
-        terrain_origin_x = x_position - (width * horizontal_scale) / 2
-        terrain_origin_y = y_position - (length * horizontal_scale) / 2
+        terrain_origin_x = x_position - ((width - 1) * horizontal_scale) / 2 
+        terrain_origin_y = y_position - ((length - 1) * horizontal_scale) / 2 
 
         # Convert parameters to discrete units
         depression_depth_units = int(depression_depth / vertical_scale)
         platform_height_units = int(platform_height / vertical_scale)
 
         # Create heightfield array
-        height_field_raw = np.zeros((width, length), dtype=np.int16)
+        height_field_raw = np.zeros((width, length), dtype=np.float32)
         height_field_raw[:, :] = platform_height_units
 
         # Position depression at the center of the terrain
         center_x = width // 2
         center_y = length // 2
         half_size_x = int((scale_x / 2) / horizontal_scale)
-        half_size_y = int((scale_y / 2) / horizontal_scale)
+        half_size_y = int((scale_y / 2) / horizontal_scale) 
 
         depression_start_x = center_x - half_size_x
         depression_end_x = center_x + half_size_x
@@ -248,20 +202,15 @@ class Anymal_runner(object):
         default_prim_path = "/World"
         particle_system_path = default_prim_path + "/particleSystem"
 
-        # Set particle system parameters from config
-        rest_offset = self.config.particle_system_rest_offset
-        solid_rest_offset = self.config.particle_system_solid_rest_offset
-        particle_contact_offset = self.config.particle_system_contact_offset
-
         # Create the particle system
         self._particle_system = ParticleSystem(
             prim_path=particle_system_path,
             particle_system_enabled=True,
             simulation_owner="/physicsScene",
-            rest_offset=rest_offset,
-            contact_offset=particle_contact_offset,
-            solid_rest_offset=solid_rest_offset,
-            particle_contact_offset=particle_contact_offset,
+            rest_offset=self.config.particle_system_rest_offset,
+            contact_offset=self.config.particle_system_contact_offset,
+            solid_rest_offset=self.config.particle_system_solid_rest_offset,
+            particle_contact_offset=self.config.particle_system_particle_contact_offset,
             max_velocity=self.config.particle_system_max_velocity,
             max_neighborhood=self.config.particle_system_max_neighborhood,
             solver_position_iteration_count=self.config.particle_system_solver_position_iteration_count,
@@ -272,8 +221,11 @@ class Anymal_runner(object):
         # Create the particle prototype
         self.create_pbd_material()
 
-        # Create a grid of particles
-        self.create_particle_grid()
+        # # Create a grid of particles
+        # self.create_particle_grid()
+
+        # Create particles from a mesh
+        self.create_particles_from_mesh()
 
     def create_particle_grid(self):
         # Define paths
@@ -349,6 +301,69 @@ class Anymal_runner(object):
             self.stage, particle_point_instancer_path.AppendChild("particlePrototype0")
         )
         particle_prototype_sphere.CreateRadiusAttr().Set(solid_rest_offset)
+
+    def create_particles_from_mesh(self):
+        """
+        Creates particles from the specified mesh.
+        
+        Args:
+
+        """
+        default_prim_path = "/World"
+        particle_system_path = default_prim_path + "/particleSystem"
+        particle_set_path = default_prim_path + "/particles"
+        # create a cube mesh that shall be sampled:
+        cube_mesh_path = Sdf.Path(omni.usd.get_stage_next_free_path(self.stage, "/Cube", True))
+        cube_resolution = (
+            2  # resolution can be low because we'll sample the surface / volume only irrespective of the vertex count
+        )
+        omni.kit.commands.execute(
+            "CreateMeshPrimWithDefaultXform", prim_type="Cube", u_patches=cube_resolution, v_patches=cube_resolution, select_new_prim=False
+        )        
+        cube_mesh = UsdGeom.Mesh.Get(self.stage, Sdf.Path(cube_mesh_path))
+
+        physicsUtils.setup_transform_as_scale_orient_translate(cube_mesh)
+
+        physicsUtils.set_or_add_translate_op(
+        cube_mesh, 
+        Gf.Vec3f(
+            self.config.particle_x_position, 
+            self.config.particle_y_position, 
+            self.config.particle_z_position
+            )
+        )
+        physicsUtils.set_or_add_scale_op(
+            cube_mesh, 
+            Gf.Vec3f(
+                self.config.particle_scale_x, 
+                self.config.particle_scale_y, 
+                self.config.particle_scale_z
+            )
+        )
+        
+        # Calculate sampling distance based on particle system parameters
+        solid_rest_offset =  self.config.particle_system_solid_rest_offset
+        particle_sampler_distance = 2.5 * solid_rest_offset
+
+        # Apply particle sampling on the mesh
+        sampling_api = PhysxSchema.PhysxParticleSamplingAPI.Apply(cube_mesh.GetPrim())
+        # sampling_api.CreateSamplingDistanceAttr().Set(particle_sampler_distance)
+        sampling_api.CreateMaxSamplesAttr().Set(5e5)
+        sampling_api.CreateVolumeAttr().Set(True)  # Set to True if sampling volume, False for surface
+
+        cube_mesh.CreateVisibilityAttr("invisible")
+
+        # create particle set
+        points = UsdGeom.Points.Define(self.stage, particle_set_path)
+        points.CreateDisplayColorAttr().Set(Vt.Vec3fArray([Gf.Vec3f(71.0 / 255.0, 125.0 / 255.0, 1.0)]))
+        particleUtils.configure_particle_set(points.GetPrim(), particle_system_path, 
+        self.config.particle_grid_self_collision, self.config.particle_grid_fluid, 
+        self.config.particle_grid_particle_group, self.config.particle_grid_particle_mass, self.config.particle_grid_density)
+
+        # reference the particle set in the sampling api
+        sampling_api.CreateParticlesRel().AddTarget(particle_set_path)
+
+
 
     def create_pbd_material(self):
         ps = PhysxSchema.PhysxParticleSystem.Get(self.stage, Sdf.Path("/World/particleSystem"))
@@ -428,7 +443,9 @@ def main():
     config_file_path = os.path.join(script_dir, 'config.yaml')
     with open(config_file_path, 'r') as file:
         config_data = yaml.safe_load(file)
-    runner = Anymal_runner(config=config, sim_cfg=config_data)
+    config = Config(config_data=config_data.get("config"))
+    sim_cfg = config_data.get("sim_config")
+    runner = Anymal_runner(config=config, sim_cfg=sim_cfg)
     simulation_app.update()
     runner.setup()
     simulation_app.update()
