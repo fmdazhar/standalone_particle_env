@@ -1,21 +1,5 @@
 config:
-  # Position and scale of the particle grid
-  particle_x_position: 0.0      # X-coordinate of the particle grid center
-  particle_y_position: 0.0      # Y-coordinate of the particle grid center
-  particle_z_position: 0.2      # Z-coordinate (height) of the particle grid above ground
-  particle_scale_x: 3.0         # Scale (width) of the particle grid in the X-axis
-  particle_scale_y: 3.0         # Scale (length) of the particle grid in the Y-axis
-  particle_scale_z: 0.5         # Scale (height) of the particle grid in the Z-axis
-
-  # Terrain configuration
-  terrain_width: 256            # Width of the terrain grid (number of points)
-  terrain_length: 256           # Length of the terrain grid (number of points)
-  terrain_vertical_scale: 0.005 # Vertical scaling factor (height per unit)
-  terrain_horizontal_scale: 0.1 # Horizontal scaling factor (distance per pixel)
-  terrain_platform_height: 0.0  # Height of the surrounding platform in meters
-  terrain_depression_depth: 0.5 # Depth of the central depression (negative value for a dip)
-
-  # Particle-based dynamics (PBD) material properties
+ # Particle-based dynamics (PBD) material properties
   pbd_material_friction: 0.8                    # Friction value for particles
   pbd_material_particle_friction_scale: 0.2     # Scale factor for particle-particle friction
   pbd_material_adhesion: 0.00001                # Adhesion coefficient for particles
@@ -41,6 +25,22 @@ config:
   particle_grid_particle_group: 0              # Group ID for particles, used for grouping behaviors
   particle_grid_particle_mass: 0.0             # Mass of each particle (can be overridden by density)
   particle_grid_density: 0.0                   # Density of particles (optional, overrides individual mass)
+
+  # Position and scale of the particle grid
+  particle_x_position: 0.0      # X-coordinate of the particle grid center
+  particle_y_position: 0.0      # Y-coordinate of the particle grid center
+  particle_z_position: 0.2      # Z-coordinate (height) of the particle grid above ground
+  particle_scale_x: 3.0         # Scale (width) of the particle grid in the X-axis
+  particle_scale_y: 3.0         # Scale (length) of the particle grid in the Y-axis
+  particle_scale_z: 0.5         # Scale (height) of the particle grid in the Z-axis
+
+  # Terrain configuration
+  terrain_width: 256            # Width of the terrain grid (number of points)
+  terrain_length: 256           # Length of the terrain grid (number of points)
+  terrain_vertical_scale: 0.005 # Vertical scaling factor (height per unit)
+  terrain_horizontal_scale: 0.1 # Horizontal scaling factor (distance per pixel)
+  terrain_platform_height: 0.0  # Height of the surrounding platform in meters
+  terrain_depression_depth: 0.5 # Depth of the central depression (negative value for a dip)
 
 
 sim_config:
