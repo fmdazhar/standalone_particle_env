@@ -1,6 +1,6 @@
 # Standalone Particle Environment
 
-This repository contains a standalone particle-based simulation environment using NVIDIA's Isaac Sim. The environment is designed to simulate and calibrate particle systems with various configurations, using GPU-accelerated physics and terrain features.
+This repository contains a standalone particle-based simulation environment using NVIDIA's Isaac Sim. The environment is designed to calibrate particle systems with various configurations and also simulate quadruped to inetract with it, using GPU-accelerated physics and terrain features.
 
 ## System Requirements
 
@@ -44,6 +44,7 @@ PYTHON_PATH particle_tune.py
 Customize config section from `config.yaml` based on the desired particle properties.
 
 It is also possible to use calibrate.usd file directly in the GUI for calibration.
+
 
 
 To start the simulation along with quadruped, navigate to the cloned repository folder and run:
