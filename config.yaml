@@ -2,18 +2,18 @@ config:
  # Particle-based dynamics (PBD) material properties
   pbd_material_friction: 0.8                    # Friction value for particles
   pbd_material_particle_friction_scale: 0.2     # Scale factor for particle-particle friction
-  pbd_material_adhesion: 0.00001                # Adhesion coefficient for particles
+  pbd_material_adhesion: 0.00001              # Adhesion coefficient for particles
   pbd_material_particle_adhesion_scale: 10000.0 # Scale factor for particle adhesion strength
   pbd_material_adhesion_offset_scale: 1.2       # Offset scale for adhesion calculations
   pbd_material_density: 1500                    # Density of particle material (kg/m³)
 
   # Particle system parameters
   particle_system_rest_offset: 0.02                 # Rest offset for particle collision
-  particle_system_solid_rest_offset: 0.015          # Solid rest offset (for rigid particle collision)
+  particle_system_solid_rest_offset: 0.02        # Solid rest offset (for rigid particle collision)
   particle_system_contact_offset: 0.02              # Contact offset for particles
   particle_system_particle_contact_offset: 0.04     # Contact offset specifically between particles
   particle_system_max_velocity: 100.0               # Maximum allowable particle velocity
-  particle_system_max_neighborhood: 340             # Maximum number of neighboring particles to consider
+  particle_system_max_neighborhood: 96           # Maximum number of neighboring particles to consider
   particle_system_solver_position_iteration_count: 64 # Solver iteration count for particle position adjustments
   particle_system_enable_ccd: True                  # Enable Continuous Collision Detection (CCD) for particles
   particle_system_max_depenetration_velocity: 100.0 # Maximum velocity for depenetration corrections
@@ -50,62 +50,66 @@ sim_config:
   warp: False
   enable_livestream: False
   test: False
+  enable_recording: False
 
-  sim:
-    use_gpu_pipeline: False
-    gravity: [0.0, 0.0, -9.81]
-    add_ground_plane: False
-    add_distant_light: False
-    use_fabric: True
-    enable_scene_query_support: False
-    disable_contact_processing: False
+  task:
+    sim:
+      dt: 0.005
+      rendering_dt: 0.02
+      use_gpu_pipeline: False
+      gravity: [0.0, 0.0, -9.81]
+      add_ground_plane: False
+      add_distant_light: False
+      use_fabric: False
+      enable_scene_query_support: False
+      disable_contact_processing: False
 
-    # set to True if you use camera sensors in the environment
-    enable_cameras: False
+      # set to True if you use camera sensors in the environment
+      enable_cameras: False
 
-    default_physics_material:
-      static_friction: 1.0
-      dynamic_friction: 1.0
-      restitution: 0.0
+      default_physics_material:
+        static_friction: 1.0
+        dynamic_friction: 1.0
+        restitution: 0.0
 
-    physx:
-      use_gpu: True
-      solver_position_iteration_count: 4
-      solver_velocity_iteration_count: 0
-      contact_offset: 0.02
-      rest_offset: 0.0
-      bounce_threshold_velocity: 0.2
-      friction_offset_threshold: 0.04
-      friction_correlation_distance: 0.025
-      enable_sleeping: True
-      enable_stabilization: True
-      max_depenetration_velocity: 100.0
+      physx:
+        use_gpu: True
+        solver_position_iteration_count: 4
+        solver_velocity_iteration_count: 0
+        contact_offset: 0.02
+        rest_offset: 0.0
+        bounce_threshold_velocity: 0.2
+        friction_offset_threshold: 0.04
+        friction_correlation_distance: 0.025
+        enable_sleeping: True
+        enable_stabilization: True
+        max_depenetration_velocity: 100.0
 
-      # GPU buffers
-      gpu_max_rigid_contact_count: 524288
-      gpu_max_rigid_patch_count: 163840
-      gpu_found_lost_pairs_capacity: 4194304
-      gpu_found_lost_aggregate_pairs_capacity: 33554432
-      gpu_total_aggregate_pairs_capacity: 4194304
-      gpu_max_soft_body_contacts: 1048576
-      gpu_max_particle_contacts: 1048576
-      gpu_heap_capacity: 134217728
-      gpu_temp_buffer_capacity: 33554432
-      gpu_max_num_partitions: 8
+        # GPU buffers
+        gpu_max_rigid_contact_count: 524288
+        gpu_max_rigid_patch_count: 163840
+        gpu_found_lost_pairs_capacity: 4194304
+        gpu_found_lost_aggregate_pairs_capacity: 33554432
+        gpu_total_aggregate_pairs_capacity: 4194304
+        gpu_max_soft_body_contacts: 1048576
+        gpu_max_particle_contacts: 1048576
+        gpu_heap_capacity: 134217728
+        gpu_temp_buffer_capacity: 33554432
+        gpu_max_num_partitions: 8
 
-    anymal:
-      # -1 to use default values
-      override_usd_defaults: False
-      enable_self_collisions: True
-      enable_gyroscopic_forces: False
-      # also in stage params
-      # per-actor
-      solver_position_iteration_count: 4
-      solver_velocity_iteration_count: 0
-      sleep_threshold: 0.005
-      stabilization_threshold: 0.001
-      # per-body
-      density: -1
-      max_depenetration_velocity: 100.0
+      anymal:
+        # -1 to use default values
+        override_usd_defaults: False
+        enable_self_collisions: True
+        enable_gyroscopic_forces: False
+        # also in stage params
+        # per-actor
+        solver_position_iteration_count: 4
+        solver_velocity_iteration_count: 0
+        sleep_threshold: 0.005
+        stabilization_threshold: 0.001
+        # per-body
+        density: -1
+        max_depenetration_velocity: 100.0
 
 

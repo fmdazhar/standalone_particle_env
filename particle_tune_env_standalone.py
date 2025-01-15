@@ -45,9 +45,10 @@ class Anymal_runner(object):
         config {Config} -- Configuration object containing parameters.
         """
         self.config = config
-        physics_dt = 1/200.0
-        render_dt = 1/120.0
-        self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, rendering_dt=render_dt)
+        self._sim_config =  SimConfig(sim_cfg)
+        physics_dt = self._sim_config.sim_params["dt"]
+        render_dt = self._sim_config.sim_params["rendering_dt"]
+        self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, backend = "torch", rendering_dt=render_dt, sim_params=self._sim_config.get_physics_params(),)
         self.stage = get_current_stage()
 
         simulation_context = SimulationContext.instance()
@@ -58,7 +59,7 @@ class Anymal_runner(object):
         if assets_root_path is None:
             carb.log_error("Could not find Isaac Sim assets folder")
 
-        self._sim_config =  SimConfig(sim_cfg)
+
 
         # Create custom terrain
         self.generate_central_depression_terrain()
@@ -445,6 +446,7 @@ def main():
         config_data = yaml.safe_load(file)
     config = Config(config_data=config_data.get("config"))
     sim_cfg = config_data.get("sim_config")
+    print("sim_cfg:", sim_cfg)
     runner = Anymal_runner(config=config, sim_cfg=sim_cfg)
     simulation_app.update()
     runner.setup()

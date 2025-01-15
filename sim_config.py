@@ -67,7 +67,7 @@ class SimConfig:
         self._sim_params["warp"] = self._config["warp"]
         self._sim_params["sim_device"] = self._config["sim_device"]
 
-        # self._adjust_dt()
+        self._adjust_dt()
 
         if self._sim_params["disable_contact_processing"]:
             carb.settings.get_settings().set_bool("/physics/disableContactProcessing", True)
@@ -102,6 +102,9 @@ class SimConfig:
         self._sim_params = copy.deepcopy(default_sim_params)
         self._default_physics_material = copy.deepcopy(default_physics_material)
         sim_cfg = self._cfg.get("sim", None)
+        if sim_cfg is  None:
+            print("No sim config found in task config")
+
         if sim_cfg is not None:
             for opt in sim_cfg.keys():
                 if opt in self._sim_params:
