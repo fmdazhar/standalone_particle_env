@@ -48,7 +48,7 @@ class Anymal_runner(object):
         self._sim_config =  SimConfig(sim_cfg)
         physics_dt = self._sim_config.sim_params["dt"]
         render_dt = self._sim_config.sim_params["rendering_dt"]
-        self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt, backend = "torch", rendering_dt=render_dt, sim_params=self._sim_config.get_physics_params(),)
+        self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt,  rendering_dt=render_dt, sim_params=self._sim_config.get_physics_params(),)
         self.stage = get_current_stage()
 
         simulation_context = SimulationContext.instance()
