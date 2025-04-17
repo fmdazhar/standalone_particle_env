@@ -34,7 +34,7 @@ import carb
 import numpy as np
 import omni.usd
 import torch
-from omni.isaac.core.utils.extensions import enable_extension
+from isaacsim.core.utils.extensions import enable_extension
 from default_scene_params import *
 
 

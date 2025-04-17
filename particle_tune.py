@@ -6,21 +6,19 @@ import carb
 import numpy as np
 import omni.appwindow  # Contains handle to keyboard
 
-from omni.isaac.core import World
-from omni.isaac.core.utils.prims import define_prim, get_prim_at_path
-from omni.isaac.nucleus import get_assets_root_path
-from omni.isaac.core.utils.stage import get_current_stage
-from omni.isaac.core.simulation_context import SimulationContext
-
-from pxr import Gf, UsdGeom, UsdPhysics, PhysxSchema, Sdf, Vt, UsdLux, UsdShade
+from isaacsim.core.api import World, SimulationContext
+from isaacsim.core.utils.prims import define_prim, get_prim_at_path
+from isaacsim.storage.native import get_assets_root_path
+from isaacsim.core.utils.stage import get_current_stage
+from isaacsim.core.prims import ParticleSystem, SingleParticleSystem, SingleXFormPrim
 from omni.physx.scripts import physicsUtils, particleUtils
-from omni.isaac.core.prims.soft.particle_system import ParticleSystem
-from omni.isaac.core.prims.soft.particle_system_view import ParticleSystemView
-from omni.isaac.core.prims import XFormPrim
 
 import random
 import yaml
 import os
+from pxr import Gf, UsdGeom, UsdPhysics, PhysxSchema, Sdf, Vt, UsdLux, UsdShade
+
+
 
 class Config:
     def __init__(self, config_data=None):
@@ -60,7 +58,7 @@ class ParticleEnvironment:
 
     def create_particle_system(self):
         # Create the particle system with parameters from config
-        self._particle_system = ParticleSystem(
+        self._particle_system = SingleParticleSystem(
             prim_path=self.particle_system_path,
             particle_system_enabled=True,
             simulation_owner="/physicsScene",
@@ -105,11 +103,11 @@ class ParticleEnvironment:
 
         physicsUtils.set_or_add_translate_op(
             cylinder_mesh,
-            Gf.Vec3f(0, 0, 0.6)  # Adjust height as needed
+            Gf.Vec3f(0, 0, 1.2)  # Adjust height as needed
         )
         physicsUtils.set_or_add_scale_op(
             cylinder_mesh, 
-            Gf.Vec3f(0.5, 0.5, 1)  # Adjust scale as needed
+            Gf.Vec3f(1, 1, 2)  # Adjust scale as needed
         )
 
         # Apply particle sampling on the mesh
