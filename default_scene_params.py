@@ -29,7 +29,7 @@
 
 default_physx_params = {
     ### Per-scene settings
-    "use_gpu": False,
+    "use_gpu": True,
     "worker_thread_count": 4,
     "solver_type": 1,  # 0: PGS, 1:TGS
     "bounce_threshold_velocity": 0.2,
