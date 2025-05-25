@@ -40,10 +40,6 @@ class ParticleEnvironment:
         
         # import carb
         # carb.settings.get_settings().set_bool("/physics/suppressReadback", False)
-        # carb.settings.get_settings().set_bool("/physics/updateParticlesToUsd", True)
-        # carb.settings.get_settings().set_bool("/physics/updateVelocitiesToUsd", False)
-        # carb.settings.get_settings().set_bool("/physics/updateForceSensorsToUsd", False)
-
         self.stage = get_current_stage()
 
         self._world.get_physics_context().enable_gpu_dynamics(True)
@@ -78,9 +74,7 @@ class ParticleEnvironment:
             solver_position_iteration_count=self.config.particle_system_solver_position_iteration_count,
             enable_ccd=self.config.particle_system_enable_ccd,
         )
-        self._particle_system_view = ParticleSystem(prim_paths_expr=self.particle_system_path)
-        self._world.scene.add(self._particle_system_view)
-
+        
         # physx_ps = PhysxSchema.PhysxParticleSystem.Define(self.stage, self.particle_system_path)
         # physx_ps.CreateParticleSystemEnabledAttr().Set(True)
         # physx_ps.CreateSimulationOwnerRel().AddTarget(self.stage.GetPrimAtPath("/physicsScene").GetPath())
@@ -108,8 +102,6 @@ class ParticleEnvironment:
 
         # Create particles from a cylinder mesh
         self.create_particle_grid()
-        
-
 
     def create_particle_grid(self):
         # Define paths
@@ -160,18 +152,46 @@ class ParticleEnvironment:
                 y = y + particle_spacing
             y = lower[1]
             x = x + particle_spacing
-        positions, velocities = (position, [uniform_particle_velocity] * len(position))
-        widths = [2 * solid_rest_offset * 0.5] * len(position)
 
-        # Define particle point instancer path
-        particle_point_instancer_path = Sdf.Path(particle_system_path + "/particles")
+        # positions, velocities = (position, [uniform_particle_velocity] * len(position))
+        # widths = [2 * solid_rest_offset * 0.5] * len(position)
 
-        # Add the particle set to the point instancer
-        particleUtils.add_physx_particleset_pointinstancer(
+        # # Define particle point instancer path
+        # particle_point_instancer_path = Sdf.Path(particle_system_path + "/particles")
+
+        # # Add the particle set to the point instancer
+        # particleUtils.add_physx_particleset_pointinstancer(
+        #     self.stage,
+        #     particle_point_instancer_path,
+        #     Vt.Vec3fArray(positions),
+        #     Vt.Vec3fArray(velocities),
+        #     particle_system_path,
+        #     self_collision=self.config.particle_grid_self_collision,
+        #     fluid=self.config.particle_grid_fluid,
+        #     particle_group=self.config.particle_grid_particle_group,
+        #     particle_mass=self.config.particle_grid_particle_mass,
+        #     density=self.config.particle_grid_density,
+        # )
+
+        # # Configure particle prototype
+        # particle_prototype_sphere = UsdGeom.Sphere.Get(
+        #     self.stage, particle_point_instancer_path.AppendChild("particlePrototype0")
+        # )
+        # particle_prototype_sphere.CreateRadiusAttr().Set(solid_rest_offset)
+
+        velocities = [uniform_particle_velocity] * len(position)          # list[ Gf.Vec3f ]
+        widths     = [solid_rest_offset] * len(position)                  # list[ float ] (diameter)
+
+        # USD Points prim that will hold the particles (no PointInstancer)
+        particle_points_path = Sdf.Path(particle_system_path + "/particles")
+
+        # Add the particle set directly as USD Points
+        particleUtils.add_physx_particleset_points(
             self.stage,
-            particle_point_instancer_path,
-            Vt.Vec3fArray(positions),
-            Vt.Vec3fArray(velocities),
+            particle_points_path,
+            position,
+            velocities,
+            widths,
             particle_system_path,
             self_collision=self.config.particle_grid_self_collision,
             fluid=self.config.particle_grid_fluid,
@@ -179,12 +199,6 @@ class ParticleEnvironment:
             particle_mass=self.config.particle_grid_particle_mass,
             density=self.config.particle_grid_density,
         )
-
-        # Configure particle prototype
-        particle_prototype_sphere = UsdGeom.Sphere.Get(
-            self.stage, particle_point_instancer_path.AppendChild("particlePrototype0")
-        )
-        particle_prototype_sphere.CreateRadiusAttr().Set(solid_rest_offset)
 
     def setup(self) -> None:
         self.create_particle_system()  # Create the particle system
@@ -206,6 +220,7 @@ def main():
     simulation_app.update()
     env.setup()
     simulation_app.update()
+    env._world.reset()
     env._world.reset()
     env._world.reset()
     simulation_app.update()

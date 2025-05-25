@@ -11,7 +11,7 @@ from isaacsim.core.utils.prims import define_prim, get_prim_at_path
 from isaacsim.storage.native import get_assets_root_path
 from isaacsim.robot.policy.examples.robots.anymal import AnymalFlatTerrainPolicy
 from isaacsim.core.utils.stage import get_current_stage
-from isaacsim.core.prims import ParticleSystem, SingleParticleSystem, SingleXFormPrim
+from isaacsim.core.prims import SingleParticleSystem, SingleXFormPrim
 
 from pxr import Gf, UsdGeom, UsdPhysics, PhysxSchema, Sdf, Vt, UsdLux, UsdShade
 from omni.physx.scripts import physicsUtils, particleUtils
@@ -46,7 +46,7 @@ class Anymal_runner(object):
         self._sim_config =  SimConfig(sim_cfg)
         physics_dt = self._sim_config.sim_params["dt"]
         render_dt = self._sim_config.sim_params["rendering_dt"]
-        self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt,  rendering_dt=render_dt, sim_params=self._sim_config.get_physics_params(),)
+        self._world = World(stage_units_in_meters=1.0, physics_dt=physics_dt,  rendering_dt=render_dt, backend = "torch", sim_params=self._sim_config.get_physics_params(),)
         self.stage = get_current_stage()
 
         simulation_context = SimulationContext.instance()
@@ -62,15 +62,15 @@ class Anymal_runner(object):
         # Create custom terrain
         self.generate_central_depression_terrain()
         prim_path = "/World/Anymal"
-        self._anymal = AnymalFlatTerrainPolicy(
-            prim_path="/World/Anymal",
-            name="Anymal",
-            usd_path=assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c.usd",
-            position=np.array([-2.5, 0, 0.7]),
-        )
-        self._sim_config.apply_articulation_settings(
-            "anymal", get_prim_at_path(prim_path), self._sim_config.parse_actor_config("anymal")
-        )
+        # self._anymal = AnymalFlatTerrainPolicy(
+        #     prim_path="/World/Anymal",
+        #     name="Anymal",
+        #     usd_path=assets_root_path + "/Isaac/Robots/ANYbotics/anymal_c.usd",
+        #     position=np.array([-2.5, 0, 0.7]),
+        # )
+        # self._sim_config.apply_articulation_settings(
+        #     "anymal", get_prim_at_path(prim_path), self._sim_config.parse_actor_config("anymal")
+        # )
         self.create_particle_system()  # Create the particle system
 
         light = UsdLux.DistantLight.Define(self.stage, "/World/defaultDistantLight")
@@ -221,7 +221,7 @@ class Anymal_runner(object):
         # Create the particle prototype
         self.create_pbd_material()
 
-        # # Create a grid of particles
+        # # # Create a grid of particles
         # self.create_particle_grid()
 
         # Create particles from a mesh
@@ -245,9 +245,9 @@ class Anymal_runner(object):
         solid_rest_offset = self.config.particle_system_solid_rest_offset
         particle_spacing = 2.5 * solid_rest_offset
 
-        num_samples_x = int(scale_x / particle_spacing) + 1
-        num_samples_y = int(scale_y / particle_spacing) + 1
-        num_samples_z = int(scale_z / particle_spacing) + 1
+        num_samples_x = int(scale_x / particle_spacing) 
+        num_samples_y = int(scale_y / particle_spacing) 
+        num_samples_z = int(scale_z / particle_spacing) 
 
         # Jitter factor from config (as a fraction of particle_spacing)
         jitter_factor = self.config.particle_grid_jitter_factor * particle_spacing
@@ -277,7 +277,7 @@ class Anymal_runner(object):
             y = lower[1]
             x = x + particle_spacing
         positions, velocities = (position, [uniform_particle_velocity] * len(position))
-        widths = [2 * solid_rest_offset * 0.5] * len(position)
+        print("Number of particles in grid:", len(positions))
 
         # Define particle point instancer path
         particle_point_instancer_path = Sdf.Path(particle_system_path + "/particles")
@@ -397,14 +397,14 @@ class Anymal_runner(object):
         Physics call back, initialize robot (first frame) and call robot advance function to compute and apply joint torque
         """
         if self.first_step:
-            self._anymal.initialize()
+            # self._anymal.initialize()
             self.first_step = False
         elif self.needs_reset:
             self._world.reset(True)
             self.needs_reset = False
             self.first_step = True
-        else:
-            self._anymal.forward(step_size, self._base_command)
+        # else:
+        #     self._anymal.forward(step_size, self._base_command)
 
     def run(self) -> None:
         """
