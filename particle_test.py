@@ -29,6 +29,9 @@ class Config:
     def update_from_dict(self, config_data):
         for key, value in config_data.items():
             setattr(self, key, value)
+    def get(self, name, default=None):
+        """Mimic dict.get() by returning attribute or default."""
+        return getattr(self, name, default)
 
 class ParticleEnvironment:
     def __init__(self, config, sim_cfg):
@@ -40,17 +43,8 @@ class ParticleEnvironment:
         self.stage = get_current_stage()
         self._world.get_physics_context().enable_gpu_dynamics(True)
         self._world.get_physics_context().set_broadphase_type("GPU")
-
-        # # spawn ground scene
-        # self._world.scene.add_default_ground_plane(
-        #     z_position=0,
-        #     name="default_ground_plane",
-        #     prim_path="/World/defaultGroundPlane",
-        #     static_friction=1,
-        #     dynamic_friction=1,
-        #     restitution=0,
-        # )
-        self.generate_flat_terrain()
+        
+        self.generate_central_depression_terrain()
 
 
         light = UsdLux.DistantLight.Define(self.stage, "/World/defaultDistantLight")
@@ -226,18 +220,34 @@ class ParticleEnvironment:
         physx_collision_api.GetRestOffsetAttr().Set(0.00)
 
     def create_particle_system(self):
+        fluid = self.config.particle_grid_fluid
+        particle_contact_offset = self.config.particle_system_particle_contact_offset
+
+        if fluid:
+            fluid_rest_offset = 0.99 * 0.6 * particle_contact_offset
+            rest_offset = 0.99 * particle_contact_offset
+            solid_rest_offset = 0.99 * particle_contact_offset
+            contact_offset = 1 * particle_contact_offset
+
+            self.config.particle_system_fluid_rest_offset = fluid_rest_offset
+            self.config.particle_system_rest_offset = rest_offset
+            self.config.particle_system_contact_offset = contact_offset
+            self.config.particle_system_solid_rest_offset = solid_rest_offset
+
         self._particle_system = SingleParticleSystem(
             prim_path=self.particle_system_path,
             particle_system_enabled=True,
             simulation_owner="/physicsScene",
-            rest_offset=self.config.particle_system_rest_offset,
-            contact_offset=self.config.particle_system_contact_offset,
-            solid_rest_offset=self.config.particle_system_solid_rest_offset,
-            particle_contact_offset=self.config.particle_system_particle_contact_offset,
-            max_velocity=self.config.particle_system_max_velocity,
-            max_neighborhood=self.config.particle_system_max_neighborhood,
-            solver_position_iteration_count=self.config.particle_system_solver_position_iteration_count,
-            enable_ccd=self.config.particle_system_enable_ccd,
+            rest_offset=self.config.get("particle_system_rest_offset", None),
+            contact_offset=self.config.get("particle_system_contact_offset", None),
+            solid_rest_offset=self.config.get("particle_system_solid_rest_offset", None),
+            fluid_rest_offset = self.config.get("particle_system_fluid_rest_offset", None),
+            particle_contact_offset=self.config.get("particle_system_particle_contact_offset", None),
+            max_velocity=self.config.get("particle_system_max_velocity", None),
+            max_neighborhood=self.config.get("particle_system_max_neighborhood", None),
+            solver_position_iteration_count=self.config.get("particle_system_solver_position_iteration_count", None),
+            enable_ccd=self.config.get("particle_system_enable_ccd", None),
+            max_depenetration_velocity=self.config.get("particle_system_max_depenetration_velocity", None),
         )
         self._particle_system_view = ParticleSystem(prim_paths_expr=self.particle_system_path)
         self._world.scene.add(self._particle_system_view)
@@ -258,21 +268,31 @@ class ParticleEnvironment:
         particleUtils.add_pbd_particle_material(
             self.stage,
             pbd_material_path,
-            friction=self.config.pbd_material_friction,
-            particle_friction_scale=self.config.pbd_material_particle_friction_scale,
-            adhesion=self.config.pbd_material_adhesion,
-            particle_adhesion_scale=self.config.pbd_material_particle_adhesion_scale,
-            adhesion_offset_scale=self.config.pbd_material_adhesion_offset_scale,
-            density=self.config.pbd_material_density,
+            friction=self.config.get("pbd_material_friction", None),
+            particle_friction_scale=self.config.get("pbd_material_particle_friction_scale", None),
+            damping=self.config.get("pbd_material_damping", None),
+            viscosity=self.config.get("pbd_material_viscosity", None),
+            vorticity_confinement=self.config.get("pbd_material_vorticity_confinement", None),
+            surface_tension=self.config.get("pbd_material_surface_tension", None),
+            cohesion=self.config.get("pbd_material_cohesion", None),
+            adhesion=self.config.get("pbd_material_adhesion", None),
+            particle_adhesion_scale=self.config.get("pbd_material_particle_adhesion_scale", None),
+            adhesion_offset_scale=self.config.get("pbd_material_adhesion_offset_scale", None),
+            gravity_scale=self.config.get("pbd_material_gravity_scale", None),
+            lift=self.config.get("pbd_material_lift", None),
+            drag=self.config.get("pbd_material_drag", None),
+            density=self.config.get("pbd_material_density", None),
+            cfl_coefficient=self.config.get("pbd_material_cfl_coefficient", None)
+
         )
         physicsUtils.add_physics_material_to_prim(self.stage, self.stage.GetPrimAtPath(self.particle_system_path), pbd_material_path)
 
         # Create particles from a cylinder mesh
         # self.create_particle_grid()
 
-        self.create_particles_from_cylinder_mesh()
+        # self.create_particles_from_cylinder_mesh()
 
-        # self.create_particles_from_cube_mesh()
+        self.create_particles_from_cube_mesh()
         
     def create_particles_from_cube_mesh(self):
         """
@@ -450,10 +470,132 @@ class ParticleEnvironment:
             self.stage, particle_point_instancer_path.AppendChild("particlePrototype0")
         )
         particle_prototype_sphere.CreateRadiusAttr().Set(solid_rest_offset)
+    
+    def create_particle_box_collider(
+        self,
+        path: Sdf.Path,
+        side_length,
+        height,
+        translate: Gf.Vec3f = Gf.Vec3f(0, 0, 0),
+        thickness: float = 0.5,
+    ):
+        """
+        Creates an invisible collider box to catch particles. Opening is in y-up
 
+        Args:
+            path:           box path (xform with cube collider children that make up box)
+            side_length:    inner side length of box
+            height:         height of box
+            translate:      location of box, w.r.t it's bottom center
+            thickness:      thickness of the box walls
+        """
+        xform = UsdGeom.Xform.Define(self.stage, path)
+        xform.MakeInvisible()
+        xform_path = xform.GetPath()
+        physicsUtils.set_or_add_translate_op(xform, translate=translate)
+        cube_width = side_length + 2.0 * thickness
+        offset = side_length * 0.5 + thickness * 0.5
+        # front and back (+/- x)
+        cube = UsdGeom.Cube.Define(self.stage, xform_path.AppendChild("top"))
+        cube.CreateSizeAttr().Set(1.0)
+        UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+        physicsUtils.set_or_add_translate_op(cube, Gf.Vec3f(0, 0,  height * 0.5  ))
+        physicsUtils.set_or_add_scale_op(cube, Gf.Vec3f(cube_width, cube_width, thickness))
+
+        cube = UsdGeom.Cube.Define(self.stage, xform_path.AppendChild("bottom"))
+        cube.CreateSizeAttr().Set(1.0)
+        UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+        physicsUtils.set_or_add_translate_op(cube, Gf.Vec3f(0, 0,  -height * 0.5 ))
+        physicsUtils.set_or_add_scale_op(cube, Gf.Vec3f(cube_width, cube_width, thickness))
+
+        # left and right:
+        cube = UsdGeom.Cube.Define(self.stage, xform_path.AppendChild("left"))
+        cube.CreateSizeAttr().Set(1.0)
+        UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+        physicsUtils.set_or_add_translate_op(cube, Gf.Vec3f(offset, 0, 0))
+        physicsUtils.set_or_add_scale_op(cube, Gf.Vec3f(thickness, cube_width, height))
+
+        cube = UsdGeom.Cube.Define(self.stage, xform_path.AppendChild("right"))
+        cube.CreateSizeAttr().Set(1.0)
+        UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+        physicsUtils.set_or_add_translate_op(cube, Gf.Vec3f(-offset, 0,0))
+        physicsUtils.set_or_add_scale_op(cube, Gf.Vec3f(thickness, cube_width, height ))
+
+        # bottom
+        cube = UsdGeom.Cube.Define(self.stage, xform_path.AppendChild("front"))
+        cube.CreateSizeAttr().Set(1.0)
+        UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+        # half‐thickness up from the base
+        physicsUtils.set_or_add_translate_op(
+            cube,
+            Gf.Vec3f(0, -offset, 0)
+        )
+        # full width/depth, thin height
+        physicsUtils.set_or_add_scale_op(
+            cube,
+            Gf.Vec3f(cube_width, thickness, height)
+        )
+
+        # top
+        cube = UsdGeom.Cube.Define(self.stage, xform_path.AppendChild("back"))
+        cube.CreateSizeAttr().Set(1.0)
+        UsdPhysics.CollisionAPI.Apply(cube.GetPrim())
+        # just below the lid
+        physicsUtils.set_or_add_translate_op(
+            cube,
+            Gf.Vec3f(0, offset,0)
+        )
+        physicsUtils.set_or_add_scale_op(
+            cube,
+            Gf.Vec3f(cube_width, thickness, height)
+        )
+
+        xform_path_str = str(xform_path)
+
+        paths = [
+            xform_path_str + "/front",
+            xform_path_str + "/back",
+            xform_path_str + "/left",
+            xform_path_str + "/right",
+            xform_path_str + "/bottom",
+            xform_path_str + "/top",
+        ]
+        glassPath = "/World/Looks/OmniGlass"
+        if not self.stage.GetPrimAtPath(glassPath):
+            mtl_created = []
+            omni.kit.commands.execute(
+                "CreateAndBindMdlMaterialFromLibrary",
+                mdl_name="OmniGlass.mdl",
+                mtl_name="OmniGlass",
+                mtl_created_list=mtl_created,
+                select_new_prim=False,
+            )
+            glassPath = mtl_created[0]
+        
+        for path in paths:
+            omni.kit.commands.execute(
+                "BindMaterial", prim_path=path, material_path=glassPath
+            )
 
     def setup(self) -> None:
         self.create_particle_system()  # Create the particle system
+        # define box collider dimensions
+        side = max(self.config.particle_scale_x, self.config.particle_scale_y)
+        height = 3  # 20% taller than particle stack
+        # center the box around the grid on the ground
+        translation = Gf.Vec3f(
+            self.config.particle_x_position,
+            self.config.particle_y_position,
+            0
+        )
+        # path can be anything under /World
+        self.create_particle_box_collider(
+            path=Sdf.Path("/World/particle_box"),
+            side_length=side,
+            height=height,
+            translate=translation,
+            thickness=0.1  # thin walls
+        )
 
     def run(self) -> None:
         while simulation_app.is_running():
