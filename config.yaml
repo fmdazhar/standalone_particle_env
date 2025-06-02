@@ -1,31 +1,12 @@
 config:
-#  # Particle-based dynamics (PBD) material properties
-#   pbd_material_friction: 0.8                    # Friction value for particles
-#   pbd_material_particle_friction_scale: 0.2     # Scale factor for particle-particle friction
-#   pbd_material_adhesion: 0.00001              # Adhesion coefficient for particles
-#   pbd_material_particle_adhesion_scale: 10000.0 # Scale factor for particle adhesion strength
-#   pbd_material_adhesion_offset_scale: 1.2       # Offset scale for adhesion calculations
-#   pbd_material_density: 1500                   # Density of particle material (kg/m³)
-#   pbd_material_damping: 10.0                  # Damping factor for particle motion
-  
-#   # Particle system parameters
-#   particle_system_rest_offset: 0.02               # Rest offset for particle collision
-#   particle_system_solid_rest_offset: 0.02       # Solid rest offset (for rigid particle collision)
-#   particle_system_contact_offset: 0.02            # Contact offset for particles
-#   particle_system_particle_contact_offset: 0.08     # Contact offset specifically between particles
-#   particle_system_max_velocity: 10.0               # Maximum allowable particle velocity
-#   particle_system_max_neighborhood: 340           # Maximum number of neighboring particles to consider
-#   particle_system_solver_position_iteration_count: 64 # Solver iteration count for particle position adjustments
-#   particle_system_enable_ccd: False                  # Enable Continuous Collision Detection (CCD) for particles
-#   particle_system_max_depenetration_velocity: 100.0 # Maximum velocity for depenetration corrections
-
-#   # Particle grid generation parameters
-#   particle_grid_jitter_factor: 0.2             # Random jitter factor for particle spacing (as a fraction of particle spacing)
-#   particle_grid_self_collision: True           # Enable self-collision within the particle grid
-#   particle_grid_fluid: False                   # Set to True if particles should behave like a fluid
-#   particle_grid_particle_group: 0              # Group ID for particles, used for grouping behaviors
-#   particle_grid_particle_mass: 0.0             # Mass of each particle (can be overridden by density)
-#   particle_grid_density: 0.0                   # Density of particles (optional, overrides individual mass)
+  # Particle-based dynamics (PBD) material properties
+  # pbd_material_friction: 0.8                    # Friction value for particles
+  # pbd_material_particle_friction_scale: 0.2     # Scale factor for particle-particle friction
+  # pbd_material_adhesion: 0.00001              # Adhesion coefficient for particles
+  # pbd_material_particle_adhesion_scale: 10000.0 # Scale factor for particle adhesion strength
+  # pbd_material_adhesion_offset_scale: 1.2       # Offset scale for adhesion calculations
+  # pbd_material_density: 1500                   # Density of particle material (kg/m³)
+  # pbd_material_damping: 10.0                  # Damping factor for particle motion
   
   # # Particle system parameters
   # particle_system_rest_offset: 0.02               # Rest offset for particle collision
@@ -45,42 +26,68 @@ config:
   # particle_grid_particle_group: 0              # Group ID for particles, used for grouping behaviors
   # particle_grid_particle_mass: 0.0             # Mass of each particle (can be overridden by density)
   # particle_grid_density: 0.0                   # Density of particles (optional, overrides individual mass)
-  # Particle grid generation parameters
-  
-  # particle_grid_jitter_factor: 0.2             # Random jitter factor for particle spacing (as a fraction of particle spacing)
-  # particle_grid_self_collision: True           # Enable self-collision within the particle grid
-  # particle_grid_fluid: False                   # Set to True if particles should behave like a fluid
-  # particle_grid_particle_group: 0              # Group ID for particles, used for grouping behaviors
-  # particle_grid_particle_mass: 0.0             # Mass of each particle (can be overridden by density)
-  # particle_grid_density: 0.0                   # Density of particles (optional, overrides individual mass)
-
-######
-
-  pbd_material_friction: 0.1                    # Friction value for particles
-  pbd_material_density: 1500                   # Density of particle material (kg/m³)
-  pbd_material_damping: 0.0                  # Damping factor for particle motion
-  pbd_material_drag: 0.0
-  pbd_material_lift: 0.0
-  pbd_material_cohesion: 0.01
-  pbd_material_viscosity: 0.0091
-  pbd_material_surface_tension: 0.0074
-  pbd_material_cfl_coefficient: 1.0
   
   # Particle system parameters
-  particle_system_particle_contact_offset: 0.035     # Contact offset specifically between particles
-  particle_system_max_velocity: 250.0              # Maximum allowable particle velocity
-  particle_system_max_neighborhood: 96           # Maximum number of neighboring particles to consider
-  particle_system_solver_position_iteration_count: 4 # Solver iteration count for particle position adjustments
-  particle_system_enable_ccd: True                  # Enable Continuous Collision Detection (CCD) for particles
-  particle_system_max_depenetration_velocity: 100.0 # Maximum velocity for depenetration corrections
+  pbd_material_friction: 0.8                    # Friction value for particles
+  pbd_material_particle_friction_scale: 0.2     # Scale factor for particle-particle friction
+  pbd_material_adhesion: 0.00001              # Adhesion coefficient for particles
+  pbd_material_particle_adhesion_scale: 10000.0 # Scale factor for particle adhesion strength
+  pbd_material_adhesion_offset_scale: 1.2       # Offset scale for adhesion calculations
+  pbd_material_density: 1500                   # Density of particle material (kg/m³)
+  pbd_material_damping: 1.0                  # Damping factor for particle motion
+
+  particle_system_rest_offset: 0.02               # Rest offset for particle collision
+  particle_system_solid_rest_offset: 0.015       # Solid rest offset (for rigid particle collision)
+  particle_system_contact_offset: 0.02            # Contact offset for particles
+  particle_system_particle_contact_offset: 0.04     # Contact offset specifically between particles
+  particle_system_max_velocity: 10.0               # Maximum allowable particle velocity
+  particle_system_max_neighborhood: 340           # Maximum number of neighboring particles to consider
+  particle_system_solver_position_iteration_count: 64 # Solver iteration count for particle position adjustments
+  particle_system_enable_ccd: False                  # Enable Continuous Collision Detection (CCD) for particles
+  particle_system_max_depenetration_velocity: 1.0 # Maximum velocity for depenetration corrections
 
   # Particle grid generation parameters
   particle_grid_jitter_factor: 0.2             # Random jitter factor for particle spacing (as a fraction of particle spacing)
   particle_grid_self_collision: True           # Enable self-collision within the particle grid
-  particle_grid_fluid: True                   # Set to True if particles should behave like a fluid
+  particle_grid_fluid: False                   # Set to True if particles should behave like a fluid
   particle_grid_particle_group: 0              # Group ID for particles, used for grouping behaviors
   particle_grid_particle_mass: 0.0             # Mass of each particle (can be overridden by density)
   particle_grid_density: 0.0                   # Density of particles (optional, overrides individual mass)
+  
+  particle_grid_jitter_factor: 0.2             # Random jitter factor for particle spacing (as a fraction of particle spacing)
+  particle_grid_self_collision: True           # Enable self-collision within the particle grid
+  particle_grid_fluid: False                   # Set to True if particles should behave like a fluid
+  particle_grid_particle_group: 0              # Group ID for particles, used for grouping behaviors
+  particle_grid_particle_mass: 0.0             # Mass of each particle (can be overridden by density)
+  particle_grid_density: 0.0                   # Density of particles (optional, overrides individual mass)
+
+######
+
+  # pbd_material_friction: 0.1                    # Friction value for particles
+  # pbd_material_density: 1500                   # Density of particle material (kg/m³)
+  # pbd_material_damping: 0.0                  # Damping factor for particle motion
+  # pbd_material_drag: 0.0
+  # pbd_material_lift: 0.0
+  # pbd_material_cohesion: 0.0
+  # pbd_material_viscosity: 0.0091
+  # pbd_material_surface_tension: 0.0074
+  # pbd_material_cfl_coefficient: 1.0
+  
+  # # Particle system parameters
+  # particle_system_particle_contact_offset: 0.035     # Contact offset specifically between particles
+  # particle_system_max_velocity: 250.0              # Maximum allowable particle velocity
+  # particle_system_max_neighborhood: 96           # Maximum number of neighboring particles to consider
+  # particle_system_solver_position_iteration_count: 4 # Solver iteration count for particle position adjustments
+  # particle_system_enable_ccd: True                  # Enable Continuous Collision Detection (CCD) for particles
+  # particle_system_max_depenetration_velocity: 100.0 # Maximum velocity for depenetration corrections
+
+  # # Particle grid generation parameters
+  # particle_grid_jitter_factor: 0.2             # Random jitter factor for particle spacing (as a fraction of particle spacing)
+  # particle_grid_self_collision: True           # Enable self-collision within the particle grid
+  # particle_grid_fluid: True                   # Set to True if particles should behave like a fluid
+  # particle_grid_particle_group: 0              # Group ID for particles, used for grouping behaviors
+  # particle_grid_particle_mass: 0.0             # Mass of each particle (can be overridden by density)
+  # particle_grid_density: 0.0                   # Density of particles (optional, overrides individual mass)
 
 
   # Position and scale of the particle grid
@@ -118,7 +125,7 @@ sim_config:
       add_ground_plane: False
       add_distant_light: True
       use_fabric: False
-      enable_scene_query_support: False
+      enable_scene_query_support: True
       disable_contact_processing: True
 
       # set to True if you use camera sensors in the environment
