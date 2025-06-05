@@ -31,15 +31,15 @@ config:
   pbd_material_friction: 0.8                    # Friction value for particles
   pbd_material_particle_friction_scale: 0.2     # Scale factor for particle-particle friction
   pbd_material_adhesion: 0.00001              # Adhesion coefficient for particles
-  pbd_material_particle_adhesion_scale: 10000.0 # Scale factor for particle adhesion strength
+  pbd_material_particle_adhesion_scale: 3000.0 # Scale factor for particle adhesion strength
   pbd_material_adhesion_offset_scale: 1.2       # Offset scale for adhesion calculations
   pbd_material_density: 1500                   # Density of particle material (kg/m³)
   pbd_material_damping: 1.0                  # Damping factor for particle motion
 
-  particle_system_rest_offset: 0.02               # Rest offset for particle collision
-  particle_system_solid_rest_offset: 0.015       # Solid rest offset (for rigid particle collision)
-  particle_system_contact_offset: 0.02            # Contact offset for particles
-  particle_system_particle_contact_offset: 0.04     # Contact offset specifically between particles
+  particle_system_rest_offset: 0.04               # Rest offset for particle collision
+  particle_system_solid_rest_offset: 0.035       # Solid rest offset (for rigid particle collision)
+  particle_system_contact_offset: 0.04            # Contact offset for particles
+  particle_system_particle_contact_offset: 0.08     # Contact offset specifically between particles
   particle_system_max_velocity: 10.0               # Maximum allowable particle velocity
   particle_system_max_neighborhood: 340           # Maximum number of neighboring particles to consider
   particle_system_solver_position_iteration_count: 64 # Solver iteration count for particle position adjustments
@@ -94,9 +94,9 @@ config:
   particle_x_position: 0.0      # X-coordinate of the particle grid center
   particle_y_position: 0.0      # Y-coordinate of the particle grid center
   particle_z_position: 0.0      # Z-coordinate (height) of the particle grid above ground
-  particle_scale_x: 3.0         # Scale (width) of the particle grid in the X-axis
-  particle_scale_y: 3.0         # Scale (length) of the particle grid in the Y-axis
-  particle_scale_z: 0.15         # Scale (height) of the particle grid in the Z-axis
+  particle_scale_x: 8.0         # Scale (width) of the particle grid in the X-axis
+  particle_scale_y: 8.0         # Scale (length) of the particle grid in the Y-axis
+  particle_scale_z: 0.07         # Scale (height) of the particle grid in the Z-axis
 
   # Terrain configuration
   terrain_width: 256            # Width of the terrain grid (number of points)
